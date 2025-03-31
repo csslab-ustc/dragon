@@ -23,7 +23,7 @@ statement
 returnStm: 'return' expr ';';
 
 expr:   ID	                                          # ExpID
-    |   INT                                           # ExpInt
+    |   sign='-'? INT                                 # ExpInt
     |   ID '(' (expr (',' expr)*)? ')'                # ExpCall
     |   left=expr op=('*'|'/') right=expr             # ExpMulOrDiv
     |	left=expr op=('+'|'-') right=expr             # ExpAddOrSub
@@ -34,7 +34,7 @@ expr:   ID	                                          # ExpID
 
 // lexical rules
 NEWLINE : [\r\n]+ -> skip;
-INT     : ('+' | '-')?[0-9]+ ;
+INT     : [0-9]+ ;
 ID      : [a-zA-Z_][a-zA-Z_0-9]* ;
 WS      : [ \t\r\n]+ -> skip ; // 跳过空白字符
 LC      : '//' ~[\r\n]* '\r'? '\n' -> skip; // 跳过单行注释

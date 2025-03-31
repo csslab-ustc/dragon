@@ -36,7 +36,10 @@ public class ASTTranslator {
     private Exp.T translateExpr(ExprContext ctx) {
         return switch (ctx) {
             case ExpIDContext exp -> new Exp.ExpId(new AstId(Id.newName(exp.ID().getText())));
-            case ExpIntContext exp -> new Exp.Num(Integer.parseInt(exp.getText()));
+            case ExpIntContext exp -> {
+                int sign = exp.sign == null ? 1 : -1;
+                yield new Exp.Num(sign * Integer.parseInt(exp.INT().getText()));
+            }
             case ExpCallContext exp -> {
                 AstId funcId = new AstId(Id.newName(exp.ID().getText()));
                 List<Exp.T> args = exp.expr().stream().map(this::translateExpr).toList();
