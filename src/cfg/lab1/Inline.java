@@ -4,13 +4,15 @@ import cfg.Cfg;
 import cfg.Cfg.Exp;
 import cfg.Cfg.Stm;
 import control.Control;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Inline {
     // /////////////////////////////////////////////////////////
@@ -74,75 +76,34 @@ public class Inline {
 
     // /////////////////////////////////////////////////////////
     // program
-    public Cfg.Program.T doitProgram(Cfg.Program.T prog) {
+    private Cfg.Program.T doitProgram0(Cfg.Program.T prog) {
         // TODO: please add your code:
         throw new util.Todo();
 
     }
+
+    public Cfg.Program.T doitProgram(Cfg.Program.T prog) {
+        var trace = new Control.Trace<>("cfg.Inline",
+                this::doitProgram0,
+                prog,
+                Cfg.Program::pp,
+                Cfg.Program::pp);
+        return trace.doit();
+    }
     // end of program
-    public static void main(String[] args) {
-        // a new test case for inline
-        Id a = Id.newName("a");
-        Id b = Id.newName("b");
-        Id c = Id.newName("c");
-        Id x = Id.newName("x");
-        Id y = Id.newName("y");
-        Id z = Id.newName("z");
-        Id callee = Id.newName("doitAdd");
-
-        Label l0 = new Label();
-        Label l1 = new Label();
-
-        Cfg.Block.T inline_bb0 = new Cfg.Block.Singleton(l0,
-                List.of(new Stm.Assign(c,
-                        new Exp.Bop(Cfg.BinaryOperator.T.Add,
-                                List.of(a, b)))),
-                new Cfg.Transfer.Ret(c));
-        Cfg.Function.T doitAdd = new Cfg.Function.Singleton(
-                new Cfg.Type.Int(), // return type
-                callee, // id
-                Stream.of(new Cfg.Dec.Singleton(new Cfg.Type.Int(), a),
-                        new Cfg.Dec.Singleton(new Cfg.Type.Int(), b)).collect(Collectors.toCollection(ArrayList::new)), // formals
-                Stream.of(new Cfg.Dec.Singleton(new Cfg.Type.Int(), c)).collect(Collectors.toCollection(ArrayList::new)), // locals
-                List.of(inline_bb0),
-                l0,
-                l0);
-
-        Cfg.Block.T inline_bb1 = new Cfg.Block.Singleton(l1,
-                new ArrayList<>(List.of(new Stm.Assign(x,
-                                new Exp.Int(5)),
-                        new Stm.Assign(y,
-                                new Exp.Int(3)),
-                        new Stm.Assign(z,
-                                new Exp.Call(callee,
-                                        List.of(x, y))),
-                        new Stm.Assign(x,
-                                new Exp.Int(7)),
-                        new Stm.Assign(y,
-                                new Exp.Int(8)),
-                        new Stm.Assign(z,
-                                new Exp.Call(callee,
-                                        List.of(x, y))))),
-                new Cfg.Transfer.Ret(z));
 
 
-        Cfg.Function.T doitInline = new Cfg.Function.Singleton(
-                new Cfg.Type.Int(), // return type
-                Id.newName("doitInline"), // id
-                new ArrayList<>(List.<Cfg.Dec.T>of()), // formals
-                Stream.of(new Cfg.Dec.Singleton(new Cfg.Type.Int(), x),
-                        new Cfg.Dec.Singleton(new Cfg.Type.Int(), y),
-                        new Cfg.Dec.Singleton(new Cfg.Type.Int(), z)).collect(Collectors.toCollection(ArrayList::new)), // locals
-                List.of(inline_bb1),
-                l1,
-                l1);
-        Cfg.Program.T progInline = new Cfg.Program.Singleton(List.of(doitAdd, doitInline));
-        var layout = Cfg.Program.layout(progInline);
-        Layout.print(layout, System.out::print, Layout.Style.C);
-        Inline inline = new Inline();
-        var prog = inline.doitProgram(progInline);
-        layout = Cfg.Program.layout(prog);
-        Layout.print(layout, System.out::print, Layout.Style.C);
+    // unit test
+    @Nested
+    public class UnitTest {
+
+        @Test
+        public void test() throws Exception {
+            Cfg.Program.T cfg = new frontend.Frontend().buildCfg("./test/test-inline.c");
+            Control.tracedMethodNames.add("cfg.Inline");
+            var newCfg = new Inline().doitProgram(cfg);
+
+        }
     }
 }
 // end of inline

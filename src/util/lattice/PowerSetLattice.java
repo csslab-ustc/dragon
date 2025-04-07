@@ -14,6 +14,7 @@ package util.lattice;
 
  */
 
+import util.Layout;
 import util.Todo;
 import util.set.FunSet;
 
@@ -121,9 +122,8 @@ public class PowerSetLattice<X> {
                         newSet(result.theSet.union(element.theSet)));
     }
 
-    public void print() {
-        this.theSet.print();
-        return;
+    public Layout.T layout() {
+        return this.theSet.layout();
     }
 
     public static void clear(){

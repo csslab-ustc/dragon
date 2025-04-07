@@ -88,8 +88,8 @@ public class Tree<X> {
             output(child);
     }
 
-    public void dot(Function<X, Layout.T> converter) {
-        Dot dot = new Dot(this.name);
+    public void dot(String postfix, Function<X, Layout.T> converter) {
+        Dot dot = new Dot(this.name+ postfix);
         for (Node node : this.allNodes) {
             for (Node child : node.children)
                 dot.insert(converter.apply(node.data),

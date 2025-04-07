@@ -2,6 +2,7 @@ package cfg.lab1;
 
 import ast.Ast;
 import cfg.Cfg;
+import control.Control;
 import util.*;
 
 import java.util.*;
@@ -239,7 +240,7 @@ public class Translate {
     // given an abstract syntax tree, lower it down
     // to a corresponding control-flow graph.
     public Cfg.Program.T doitProgram(Ast.Program.T ast) {
-        var trace = new Trace<>("ast.Translate",
+        var trace = new Control.Trace<>("ast.Translate",
                 this::doitProgram0,
                 ast,
                 Ast.Program::layout,

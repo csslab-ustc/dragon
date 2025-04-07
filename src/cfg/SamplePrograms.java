@@ -140,7 +140,7 @@ public class SamplePrograms {
 
 
     // program 4.1
-    static class ProgZero {
+    public static class ProgZero {
         static Label l0 = new Label();
         static Label l1 = new Label();
         static Label l2 = new Label();

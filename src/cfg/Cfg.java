@@ -425,11 +425,10 @@ public class Cfg {
                         _,
                         _
                 ) -> {
-                    Dot d = new Dot(functionId.toString());
                     var tuple = buildControlFlowGraph(func);
                     var cfg = tuple.first();
-                    cfg.dot(Block::layout);
-                    d.visualize();
+
+                    cfg.dot("-cfg", Block::layout);
                 }
             }
         }
@@ -459,6 +458,11 @@ public class Cfg {
                         Layout.indent(Layout.valign(blocks.stream().map(Block::layout).toList())),
                         Layout.str("}"));
             };
+        }
+
+        public static void pp(Function.T t){
+            var layout = layout(t);
+            Layout.print(layout, System.out::print, Layout.Style.C);
         }
     }
     // end of function

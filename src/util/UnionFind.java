@@ -1,5 +1,8 @@
 package util;
 
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -116,72 +119,78 @@ public class UnionFind<X> {
     public void dot(){
         List<Tree<String>> trees = this.toTrees();
         for(Tree<String> tree : trees){
-            tree.dot(Layout::str);
+            tree.dot("unionFind", Layout::str);
         }
     }
 
-
-
     // test
     @SuppressWarnings("unused")
-    private static class Test{
+    @Nested
+    public class UnitTest {
         private static class Type {
             public sealed interface T permits Arrow, Int, Ptr, Var {
             }
 
             record Arrow(T from, T to) implements T {
             }
-            record Int() implements T{}
-            record Ptr(T ty) implements T{}
-            record Var(Id var) implements T {}
 
-            public static String toString(T ty){
-                switch(ty){
+            record Int() implements T {
+            }
+
+            record Ptr(T ty) implements T {
+            }
+
+            record Var(Id var) implements T {
+            }
+
+            public static String toString(T ty) {
+                switch (ty) {
                     case Arrow(T from, T to) -> {
-                        return "Arrow_"+toString(from)+"__"+toString(to)+"_";
+                        return "Arrow_" + toString(from) + "__" + toString(to) + "_";
                     }
                     case Int() -> {
                         return "Int";
                     }
                     case Ptr(T ty1) -> {
-                        return "Ptr("+ toString(ty1)+")";
+                        return "Ptr(" + toString(ty1) + ")";
                     }
                     case Var(Id ty1) -> {
-                        return "Id_"+ty1.toString();
+                        return "Id_" + ty1.toString();
                     }
                 }
             }
         }
 
 
-        public static void checkOccur(Id var1, Type.T t2){
-            switch (t2){
+        public static void checkOccur(Id var1, Type.T t2) {
+            switch (t2) {
                 case Type.Arrow(Type.T from, Type.T to) -> {
                     checkOccur(var1, from);
                     checkOccur(var1, to);
                 }
-                case Type.Int() -> {}
-                case Type.Ptr(Type.T ty) ->{
+                case Type.Int() -> {
+                }
+                case Type.Ptr(Type.T ty) -> {
                     checkOccur(var1, ty);
                 }
                 case Type.Var(Id var) -> {
-                    if(var1.equals(var)){
+                    if (var1.equals(var)) {
                         throw new Error("recursive type");
-                    }else{
+                    } else {
                         System.out.println(var1.toString() + " " + var.toString());
                     }
                 }
             }
         }
 
-        public static Type.T normalize(Type.T ty, UnionFind<Type.T> uf){
-            switch(ty){
-                case Type.Arrow(Type.T from, Type.T to) ->{
+        public static Type.T normalize(Type.T ty, UnionFind<Type.T> uf) {
+            switch (ty) {
+                case Type.Arrow(Type.T from, Type.T to) -> {
                     var newFrom = normalize(from, uf);
                     var newTo = normalize(to, uf);
                     return new Type.Arrow(newFrom, newTo);
                 }
-                case Type.Int() ->{
+                case Type.Int() -> {
                     return ty;
                 }
                 case Type.Ptr(Type.T ty2) -> {
@@ -189,14 +198,14 @@ public class UnionFind<X> {
                 }
                 case Type.Var(Id var2) -> {
                     var targetType = uf.find(ty);
-                    switch(targetType){
-                        case Type.Arrow(_, _) ->{
+                    switch (targetType) {
+                        case Type.Arrow(_, _) -> {
                             return normalize(targetType, uf);
                         }
-                        case Type.Int() ->{
+                        case Type.Int() -> {
                             return targetType;
                         }
-                        case Type.Ptr(_) ->{
+                        case Type.Ptr(_) -> {
                             return normalize(targetType, uf);
                         }
                         case Type.Var(Id var3) -> {
@@ -209,22 +218,22 @@ public class UnionFind<X> {
 
         public static void unify(Type.T x,
                                  Type.T y,
-                                 UnionFind<Type.T> uf){
+                                 UnionFind<Type.T> uf) {
             Type.T xtype = normalize(x, uf);
             Type.T ytype = normalize(y, uf);
 
-            switch (xtype){
-                case Type.Arrow(Type.T from1, Type.T to1) ->{
-                    switch(ytype){
-                        case Type.Arrow(Type.T from2, Type.T to2) ->{
+            switch (xtype) {
+                case Type.Arrow(Type.T from1, Type.T to1) -> {
+                    switch (ytype) {
+                        case Type.Arrow(Type.T from2, Type.T to2) -> {
                             // recursion
                             unify(from1, from2, uf);
                             unify(to1, to2, uf);
                         }
-                        case Type.Int() ->{
+                        case Type.Int() -> {
                             throw new Error("bad equation");
                         }
-                        case Type.Ptr(Type.T ty2) ->{
+                        case Type.Ptr(Type.T ty2) -> {
                             throw new Error("bad equation");
                         }
                         case Type.Var(Id var2) -> {
@@ -234,14 +243,14 @@ public class UnionFind<X> {
                         }
                     }
                 }
-                case Type.Int() ->{
-                    switch (ytype){
+                case Type.Int() -> {
+                    switch (ytype) {
                         case Type.Int() -> {
                         }
                         case Type.Var(Id var) -> {
                             uf.union(ytype, xtype, false);
                         }
-                        default ->{
+                        default -> {
                             throw new Error("bad equation");
                         }
                     }
@@ -257,16 +266,16 @@ public class UnionFind<X> {
                     }
                 }
                 case Type.Var(Id var1) -> {
-                    switch (ytype){
-                        case Type.Arrow(Type.T from, Type.T to) ->{
+                    switch (ytype) {
+                        case Type.Arrow(Type.T from, Type.T to) -> {
                             // occurs
                             checkOccur(var1, ytype);
                             uf.union(xtype, ytype, false);
                         }
-                        case Type.Int() ->{
+                        case Type.Int() -> {
                             uf.union(xtype, ytype, false);
                         }
-                        case Type.Ptr(Type.T ty2) ->{
+                        case Type.Ptr(Type.T ty2) -> {
                             checkOccur(var1, ytype);
                             uf.union(xtype, ytype, false);
                         }
@@ -278,65 +287,70 @@ public class UnionFind<X> {
             }
         }
 
-        public static void unifyList(List<Tuple.Two<Type.T, Type.T>> list, UnionFind uf){
+        public static void unifyList(List<Tuple.Two<Type.T, Type.T>> list, UnionFind uf) {
             list.forEach((x) -> {
                 unify(x.first(), x.second(), uf);
             });
         }
 
-        public static void main(String[] args){
+        @Nested
+        public class UnitTest2 {
 
-            UnionFind<Type.T> uf = new UnionFind<>();
-            Type.Var varX = new Type.Var(Id.newName("x"));
-            Type.Var varY = new Type.Var(Id.newName("y"));
-            Type.Var varZ = new Type.Var(Id.newName("z"));
+            @org.junit.jupiter.api.Test
+            public void test() {
+
+                UnionFind<Type.T> uf = new UnionFind<>();
+                Type.Var varX = new Type.Var(Id.newName("x"));
+                Type.Var varY = new Type.Var(Id.newName("y"));
+                Type.Var varZ = new Type.Var(Id.newName("z"));
 
 //            // x = y
-            unify(varX, varY, uf);
+                unify(varX, varY, uf);
 //            uf.dot();
 
-            // y = z -> z
-            unify(varY, new Type.Arrow(varZ, varZ), uf);
+                // y = z -> z
+                unify(varY, new Type.Arrow(varZ, varZ), uf);
 //            uf.dot();
 
-            // z = int -> int
-            unify(varZ, new Type.Arrow(new Type.Int(), new Type.Int()), uf);
+                // z = int -> int
+                unify(varZ, new Type.Arrow(new Type.Int(), new Type.Int()), uf);
 //            uf.dot();
 
-            System.out.println(normalize(varX, uf));
-            System.out.println(normalize(varY, uf));
-            System.out.println(normalize(varZ, uf));
+                System.out.println(normalize(varX, uf));
+                System.out.println(normalize(varY, uf));
+                System.out.println(normalize(varZ, uf));
 
 
-            // spa, page 23
-            uf = new UnionFind<>();
-            var shortId = new Type.Var(Id.newName("short"));
-            var input  = new Type.Var(Id.newName("input"));
-            var allocX = new Type.Var(Id.newName("allocx"));
-            var x = new Type.Var(Id.newName("x"));
-            var y = new Type.Var(Id.newName("y"));
-            var starY = new Type.Var(Id.newName("*y"));
-            var z = new Type.Var(Id.newName("z"));
+                // spa, page 23
+                uf = new UnionFind<>();
+                var shortId = new Type.Var(Id.newName("short"));
+                var input = new Type.Var(Id.newName("input"));
+                var allocX = new Type.Var(Id.newName("allocx"));
+                var x = new Type.Var(Id.newName("x"));
+                var y = new Type.Var(Id.newName("y"));
+                var starY = new Type.Var(Id.newName("*y"));
+                var z = new Type.Var(Id.newName("z"));
 
-            unifyList(List.of(new Tuple.Two<>(shortId, new Type.Arrow(new Type.Int(), z)),
-                            new Tuple.Two<>(input, new Type.Int()),
-                            new Tuple.Two<>(x, input),
-                            new Tuple.Two<>(allocX, new Type.Ptr(x)),
-                            new Tuple.Two<>(y, allocX),
-                            new Tuple.Two<>(y, new Type.Ptr(x)),
-                            new Tuple.Two<>(z, starY),
-                            new Tuple.Two<>(y, new Type.Ptr(starY))),
-                    uf);
+                unifyList(List.of(new Tuple.Two<>(shortId, new Type.Arrow(new Type.Int(), z)),
+                                new Tuple.Two<>(input, new Type.Int()),
+                                new Tuple.Two<>(x, input),
+                                new Tuple.Two<>(allocX, new Type.Ptr(x)),
+                                new Tuple.Two<>(y, allocX),
+                                new Tuple.Two<>(y, new Type.Ptr(x)),
+                                new Tuple.Two<>(z, starY),
+                                new Tuple.Two<>(y, new Type.Ptr(starY))),
+                        uf);
 
-            System.out.println("shortid: " + normalize(shortId, uf));
-            System.out.println("input: " + normalize(input, uf));
-            System.out.println("allocx: " + normalize(allocX, uf));
-            System.out.println("stary: " + normalize(starY, uf));
-            System.out.println("x: " + normalize(x, uf));
-            System.out.println("y: " + normalize(y, uf));
-            System.out.println("z: " + normalize(z, uf));
-            uf.dot();
+                System.out.println("shortid: " + normalize(shortId, uf));
+                System.out.println("input: " + normalize(input, uf));
+                System.out.println("allocx: " + normalize(allocX, uf));
+                System.out.println("stary: " + normalize(starY, uf));
+                System.out.println("x: " + normalize(x, uf));
+                System.out.println("y: " + normalize(y, uf));
+                System.out.println("z: " + normalize(z, uf));
+                uf.dot();
 
+            }
         }
     }
 }

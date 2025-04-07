@@ -85,6 +85,13 @@ public class Graph<X> {
             return (this == o);
         }
 
+        public Node getFrom() {
+            return from;
+        }
+
+        public Node getTo() {
+            return to;
+        }
     }
 
     // graph data structures:
@@ -252,8 +259,8 @@ public class Graph<X> {
         allCriticalEdges.forEach(edge -> splitEdge(edge, dataSupplier, dataConnector));
     }
 
-    public void dot(Function<X, Layout.T> converter) {
-        Dot dot = new Dot(this.name);
+    public void dot(String postfix, Function<X, Layout.T> converter) {
+        Dot dot = new Dot(this.name + postfix);
         for (Node node : this.allNodes) {
             for (Edge edge : node.edges)
                 dot.insert(converter.apply(edge.from.data),

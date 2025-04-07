@@ -69,7 +69,7 @@ public class Dot {
         try {
             bufferedWriter.write("\n}\n\n");
             bufferedWriter.close();
-            bufferedWriter.close();
+            fileWriter.close();
         }catch (Exception e){
             throw new Error();
         }

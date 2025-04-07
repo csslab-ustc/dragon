@@ -82,9 +82,17 @@ public class CommandLine {
                             usage();
                             System.exit(1);
                         }),
+                new Arg("log",
+                        "<pass>",
+                        "which pass to log",
+                        Kind.String,
+                        (Object x) -> {
+                            String name = (String) x;
+                            Control.loggedMethodNames.add(name);
+                        }),
                 new Arg("trace",
-                        "<method>",
-                        "which method to trace",
+                        "<pass>",
+                        "which pass to trace",
                         Kind.String,
                         (Object x) -> {
                             String name = (String) x;

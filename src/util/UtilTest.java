@@ -43,7 +43,7 @@ public class UtilTest {
         @Test
         void testCriticalEdgeSplit() {
             graph.criticalEdgeSplit(start, () -> counter++, (_, _) -> {});
-            graph.dot((Integer i) -> Layout.str(i.toString()));
+            graph.dot("", (Integer i) -> Layout.str(i.toString()));
         }
 
         static Graph<Integer> buildGraph() {

@@ -1,5 +1,7 @@
 package ast;
 
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import util.Id;
 import util.Layout;
 import util.Tuple;
@@ -309,6 +311,18 @@ public class Ast {
             Layout.print(layout(prog),
                     System.out::print,
                     Layout.Style.C);
+        }
+    }
+    // end of program
+
+    @Nested
+    class UnitTest{
+        @Test
+        public void test() {
+            // to test the pretty printer
+            Layout.T layout = Ast.Program.layout(SamplePrograms.progSumRec);
+            Layout.print(layout, System.out::print, Layout.Style.C);
+            Layout.print(Ast.Program.layout(SamplePrograms.progFac), System.out::print, Layout.Style.C);
         }
     }
 }

@@ -1,8 +1,10 @@
 package util.set;
 
 import util.Error;
+import util.Layout;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 // a functional set.
 public class FunSet<X> {
@@ -109,18 +111,17 @@ public class FunSet<X> {
         return this.set.size();
     }
 
-    public void print(){
-        System.out.print("{");
-        this.set.forEach((x) -> {
-            System.out.print(x.toString());
-            System.out.print(", ");
-        });
-        System.out.println("}");
+    public Layout.T layout(){
+        return Layout.halign(List.of(Layout.str("{"),
+                Layout.halignSepRight(Layout.str(", "),
+                        this.set.stream().map(x -> Layout.str(x.toString())).collect(Collectors.toList())),
+                Layout.str("}")));
     }
 
-    public static void status(){
-        System.out.println("number of sets: = " + numSet);
+    public static Layout.T status(){
+        String info = "number of sets: = " + numSet;
         numSet = 0;
+        return Layout.str(info);
     }
 
 }

@@ -3,7 +3,6 @@ package cfg.lab1;
 import cfg.Cfg;
 import cfg.Cfg.Exp;
 import cfg.Cfg.Stm;
-import cfg.SamplePrograms;
 import control.Control;
 import org.junit.jupiter.api.Nested;
 import util.*;
@@ -156,7 +155,7 @@ public class ValueNumber {
     }
 
     public Cfg.Program.T doitProgram(Cfg.Program.T prog) {
-        var trace = new Trace<>("cfg.ValueNumber",
+        var trace = new Control.Trace<>("cfg.ValueNumber",
                 this::doitProgram0,
                 prog,
                 Cfg.Program::pp,
@@ -173,7 +172,7 @@ public class ValueNumber {
 
         @Test
         void test() {
-            var prog = SamplePrograms.valueNum;
+            var prog = cfg.SamplePrograms.valueNum;
             Control.tracedMethodNames.add("cfg.ValueNumber");
             prog = new ValueNumber().doitProgram(prog);
         }
