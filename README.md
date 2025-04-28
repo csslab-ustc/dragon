@@ -9,10 +9,11 @@ configure and execute the project.
 ## Lab Overview
 - Lab 1: [Control-Flow Graph](https://github.com/csslab-ustc/dragon/tree/lab1)
 - Lab 2: [Data-flow Analysis](https://github.com/csslab-ustc/dragon/tree/lab2)
-- Lab 3: [Lattice]()
-- Lab 4: [Static Single-assignment Form]()
-- Lab 5: [Interprocedural]()
-- Lab 6: [Pointer]()
+- Lab 3: [Optimization](https://github.com/csslab-ustc/dragon/tree/lab3)
+- Lab 4: [Lattice]()
+- Lab 5: [Static Single-assignment Form]()
+- Lab 6: [Interprocedural]()
+- Lab 7: [Pointer]()
 
 ## Get Dependencies
 Before opening the project, you need to download and setup the following dependencies:
