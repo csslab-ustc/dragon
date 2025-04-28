@@ -1,90 +1,62 @@
 package cfg.lab2;
 
-
 import cfg.Cfg;
 import control.Control;
-import util.*;
-import util.set.Set;
+import frontend.Frontend;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import util.Id;
+import util.Label;
+import util.Layout;
+import util.Property;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class AvailExp {
+    // attach liveIn/liveOut set to each graph node (i.e., block)
+    private final Property<Cfg.Block.T, Map<Cfg.Exp.T, Set<Label>>> inPropForBlock =
+            new Property<>(Cfg.Block::getPlist);
+    private final Property<Cfg.Block.T, Map<Cfg.Exp.T, Set<Label>>> outPropForBlock =
+            new Property<>(Cfg.Block::getPlist);
+    // attach liveIn set to each statement
+    private final Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>> inPropForStm =
+            new Property<>(Cfg.Stm::getPlist);
 
-    // record information within a single "map"
-    private final HashMap<Object, Tuple.Two<Set<Cfg.Exp.T>, Set<Cfg.Exp.T>>>
-            genKillMap;
+    // attach gen/kill set to each statement
+    private final Property<Cfg.Stm.T, Map<Cfg.Exp.T, Label>> genPropForStm =
+            new Property<>(Cfg.Stm::getPlist);
+    private final Property<Cfg.Stm.T, Set<Cfg.Exp.T>> killPropForStm =
+            new Property<>(Cfg.Stm::getPlist);
 
-    // for "block", "transfer", and "statement".
-    private final HashMap<Object, Tuple.Two<Set<Cfg.Exp.T>, Set<Cfg.Exp.T>>>
-            inOutMap;
+    // TODO: please add your code:
+//    throw new util.Todo();
 
-    public AvailExp() {
-        genKillMap = new HashMap<>();
-        inOutMap = new HashMap<>();
-    }
-
-
-    // /////////////////////////////////////////////////////////
-    // statement
-    private void doitStm(Cfg.Stm.T t) {
-        throw new Todo();
-    }
-    // end of statement
-
-    // /////////////////////////////////////////////////////////
-    // transfer
-    private void doitTransfer(Cfg.Transfer.T t) {
-        throw new Todo();
-    }
-
-    // /////////////////////////////////////////////////////////
-    // block
-    private void doitBlock(Cfg.Block.T b) {
-        switch (b) {
-            case Cfg.Block.Singleton(Label label,
-                                     List<Cfg.Stm.T> stms,
-                                     Cfg.Transfer.T transfer) -> {
-                throw new Todo();
-            }
-        }
-    }
 
     // /////////////////////////////////////////////////////////
     // function
-    private boolean stillChange = true;
-
     private void doitFunction(Cfg.Function.T func) {
-        switch (func) {
-            case Cfg.Function.Singleton(
-                    Cfg.Type.T retType,
-                    Id functionId,
-                    List<Cfg.Dec.T> formals,
-                    List<Cfg.Dec.T> locals,
-                    List<Cfg.Block.T> blocks,
-                    _,
-                    _
-            ) -> throw new Todo();
-        }
+        // TODO: please add your code:
+        throw new util.Todo();
+
     }
 
     // /////////////////////////////////////////////////////////
     // program
-    private HashMap<Object, Tuple.Two<Set<Cfg.Exp.T>, Set<Cfg.Exp.T>>>
+    private Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>>
     doitProgram0(Cfg.Program.T prog) {
         switch (prog) {
             case Cfg.Program.Singleton(
                     List<Cfg.Function.T> functions
             ) -> {
                 functions.forEach(this::doitFunction);
-                return inOutMap;
+                return inPropForStm;
             }
         }
     }
 
-    public HashMap<Object, Tuple.Two<Set<Cfg.Exp.T>, Set<Cfg.Exp.T>>>
+    public Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>>
     doitProgram(Cfg.Program.T prog) {
-        Control.Trace<Cfg.Program.T, HashMap<Object, Tuple.Two<Set<Cfg.Exp.T>, Set<Cfg.Exp.T>>>> trace
+        Control.Trace<Cfg.Program.T, Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>>> trace
                 = new Control.Trace<>("cfg.AvailExp",
                 this::doitProgram0,
                 prog,
@@ -92,8 +64,42 @@ public class AvailExp {
                 (x) -> Layout.str("<NONE>"));
         return trace.doit();
     }
-
     // /////////////////////////////////////////////////////////
     // unit test
 
+    @Nested
+    class UnitTest {
+        @Test
+        public void test() throws Exception {
+            Cfg.Program.T cfg = new Frontend().buildCfg("test/test-cse.c");
+
+            Control.Printer.shouldPrintStmLabel = true;
+            Cfg.Program.pp(cfg);
+
+            Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>> liveInForStms = new AvailExp().doitProgram(cfg);
+
+            ((Cfg.Program.Singleton)cfg).functions().forEach(f -> {
+                Cfg.Function.Singleton fs = (Cfg.Function.Singleton) f;
+                System.out.println("function: " + fs.id());
+                fs.blocks().forEach(b -> {
+                    Cfg.Block.Singleton bs = (Cfg.Block.Singleton) b;
+                    System.out.println("basic block: " + bs.label());
+                    bs.stms().forEach(s -> {
+                        Cfg.Stm.Assign assign = (Cfg.Stm.Assign) s;
+                        System.out.print(assign.label() + ": ");
+                        Cfg.Stm.pp(assign);
+                        System.out.print("\nlive in:\n");
+                        for (var entry : liveInForStms.get(s).entrySet()) {
+                            var layout = Cfg.Exp.layout(entry.getKey());
+                            Layout.printDefault(layout);
+                            System.out.print(" ");
+                            entry.getValue().forEach(v -> System.out.print(v + " "));
+                            System.out.println();
+                        }
+                        System.out.println("---------------------");
+                    });
+                });
+            });
+        }
+    }
 }

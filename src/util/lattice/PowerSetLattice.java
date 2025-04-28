@@ -33,12 +33,11 @@ public class PowerSetLattice<X> {
     // the current state
     private final FunSet<X> theSet;
 
-
     @SuppressWarnings("all")
     private static <X> PowerSetLattice<X> lookupOrPut(PowerSetLattice self){
         HashSet<PowerSetLattice<?>> temp = allLattices;
         for (PowerSetLattice<?> lattice : temp) {
-            if (lattice.theSet.isSame(self.theSet)) {
+            if (lattice.theSet.equals(self.theSet)) {
                 return (PowerSetLattice<X>)lattice;
             }
         }
@@ -100,15 +99,17 @@ public class PowerSetLattice<X> {
 //        return new PowerSetLattice<>(this.theSet.union(right.theSet));
     }
 
-    public boolean isSame(Object o) {
-        if (o == null) {
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PowerSetLattice<?> obj)) {
             return false;
         }
-        if (!(o instanceof PowerSetLattice)) {
-            return false;
-        }
-        return this==o;
-//        return isSameFun.apply(this.current, ((PowerSetLattice<X>) o).current);
+        return this.theSet.equals(obj.theSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.theSet.hashCode();
     }
 
     public FunSet<X> getSet() {

@@ -24,12 +24,12 @@ public class BitSet<X> implements Set<X> {
     }
 
     // s \/ {data}
-    public void add(X data) {
+    public void addData(X data) {
         this.set.set(this.getIndex.apply(data));
     }
 
     // s - {data}
-    public void remove(X data) {
+    public void removeData(X data) {
         this.set.clear(this.getIndex.apply(data));
     }
 

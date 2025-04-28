@@ -1,5 +1,8 @@
 package util;
 
+import cfg.Cfg;
+import util.set.FunSet;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -15,12 +18,6 @@ public class Graph<X> {
         private X data;
         private LinkedList<Edge> edges;
         private Plist plist;
-
-        public Node() {
-            this.data = null;
-            this.edges = null;
-            this.plist = null;
-        }
 
         public Node(X data) {
             this.data = data;
@@ -85,6 +82,11 @@ public class Graph<X> {
             return (this == o);
         }
 
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
         public Node getFrom() {
             return from;
         }
@@ -107,21 +109,21 @@ public class Graph<X> {
         this.allNodes.addLast(node);
     }
 
-    public Node addNode(X data) {
-        // sanity checking to make the data unique:
-        for (Node n : this.allNodes)
-            if (n.data.equals(data))
-                throw new Error();
+//    public Node addNode(X data) {
+//        // sanity checking to make the data unique:
+//        for (Node n : this.allNodes)
+//            if (n.data.equals(data))
+//                throw new Error();
+//
+//        Node node = new Node(data);
+//        this.addNode(node);
+//        return node;
+//    }
 
+    // create a new node, before inserting it into the graph
+    public Node newAndAddNode(X data) {
         Node node = new Node(data);
-        this.addNode(node);
-        return node;
-    }
-
-    // create a new node, but does not insert into the graph
-    public Node newNode() {
-        // sanity checking to make the data unique:
-        Node node = new Node(null);
+        this.allNodes.addLast(node);
         return node;
     }
 
@@ -139,15 +141,49 @@ public class Graph<X> {
         return edge;
     }
 
-//    public void addEdge(X from, X to) {
-//        Node f = this.lookupNode(from);
-//        Node t = this.lookupNode(to);
-//
-//        if (f == null || t == null)
-//            throw new Error();
-//
-//        this.addEdge(f, t);
-//    }
+    // algorithm 2.1
+    public Property<Node, FunSet<Node>> dominators(Node start){
+        Property<Node, FunSet<Node>> domProp = new Property<>(Node::getPlist);
+        domProp.put(start, new FunSet<>(start));
+        var allNodes = new FunSet<>(this.allNodes);
+
+        boolean stillChange;
+        do{
+            stillChange = false;
+            for (Node node : this.allNodes) {
+                var predecessors = node.predecessors();
+                var newDomSets = predecessors.stream().map((p) ->
+                        domProp.getOrInitConst(p, allNodes)).toList();
+                var theNewDomSet = FunSet.retainSets(newDomSets);
+                theNewDomSet = theNewDomSet.addData(node);
+                if(!theNewDomSet.equals(domProp.get(node))){
+                    stillChange = true;
+                    domProp.put(node, theNewDomSet);
+                }
+            }
+        }while(stillChange);
+        return domProp;
+    }
+
+    // algorithm 2.6
+    private Node dominatorsIntersect(Node[] idoms, Node a, Node b, Property<Node, Integer> numberProp) {
+        // TODO: please add your code:
+        throw new util.Todo();
+
+    }
+    public Property<Node, FunSet<Node>> dominatorsCooper(Node start){
+        // TODO: please add your code:
+        throw new util.Todo();
+
+    }
+    private void idom2dom(Node node,
+                          Node[] idoms,
+                          Property<Node, Integer> numberProp,
+                          Property<Node, FunSet<Node>> domProp){
+        // TODO: please add your code:
+        throw new util.Todo();
+
+    }
 
     private <Y> Y dfsDoit(Node n,
                           BiFunction<Node, Y, Y> reduce,
@@ -172,7 +208,7 @@ public class Graph<X> {
                 isVisited);
 
 //        // For control-flow allNodes, we do not need this, as
-//        // the "startNode" will reach all other nodes.
+//        // the "startNode" should reach all other nodes.
 //        for (Node n : this.allNodes) {
 //            if (!visited.contains(n))
 //                dfsDoit(n, doit, value, visited);
@@ -193,7 +229,7 @@ public class Graph<X> {
         }
 
 //        // For control-flow allNodes, we do not need this, as
-//        // the "startNode" will reach all other nodes.
+//        // the "startNode" should reach all other nodes.
 //        for (Node n : this.allNodes) {
 //            if (!visited.contains(n))
 //                dfsDoit(n, doit, value, visited);
@@ -216,7 +252,7 @@ public class Graph<X> {
         topoSortDoit(start, allNodes, visited);
 
 //        // For control-flow allNodes, we do not need this, as
-//        // the "startNode" will reach all other nodes.
+//        // the "startNode" should reach all other nodes.
 //        for (Node n : this.allNodes) {
 //            if (!visited.contains(n))
 //                dfsDoit(n, doit, value, visited);
@@ -259,8 +295,9 @@ public class Graph<X> {
         allCriticalEdges.forEach(edge -> splitEdge(edge, dataSupplier, dataConnector));
     }
 
+
     public void dot(String postfix, Function<X, Layout.T> converter) {
-        Dot dot = new Dot(this.name + postfix);
+        Dot dot = new Dot(this.name + "-" + postfix);
         for (Node node : this.allNodes) {
             for (Edge edge : node.edges)
                 dot.insert(converter.apply(edge.from.data),

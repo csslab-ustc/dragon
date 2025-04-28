@@ -3,119 +3,97 @@ package util.set;
 import util.Error;
 import util.Layout;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 // a functional set.
-public class FunSet<X> {
+@SuppressWarnings("unchecked")
+public class FunSet<X> extends HashSet<X> {
     private static int numSet = 0;
-
-    private final java.util.HashSet<X> set;
 
     public FunSet() {
         numSet++;
-        this.set = new java.util.HashSet<>();
+        super();
     }
     public FunSet(X x) {
         numSet++;
-        this.set = new java.util.HashSet<>();
-        this.set.add(x);
+        super(List.of(x));
     }
     public FunSet(List<X> list) {
         numSet++;
-        this.set = new java.util.HashSet<>();
-        this.set.addAll(list);
-    }
-    // add a dummy parameter to disable JVM errors
-    public FunSet(List<FunSet<X>> sets, boolean b) {
-        numSet++;
-        this.set = new java.util.HashSet<>();
-        sets.forEach(set -> this.set.addAll(set.set));
-    }
-
-    @SuppressWarnings("unchecked")
-    private FunSet(FunSet<X> theSet) {
-        numSet++;
-        try {
-            this.set = (java.util.HashSet<X>) theSet.set.clone();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        super(list);
     }
 
     // s \/ {data}
-    public FunSet<X> add(X data) {
-        var targetSet = new FunSet<>(this);
-        targetSet.set.add(data);
-        return targetSet;
+    public FunSet<X> addData(X data) {
+        FunSet<X> newSet = (FunSet<X>) this.clone();
+        newSet.add(data);
+        return newSet;
     }
 
     // s - {data}
-    public FunSet<X> remove(X data) {
-        var targetSet = new FunSet<>(this);
-        targetSet.set.remove(data);
-        targetSet.set.add(data);
-        return targetSet;
+    public FunSet<X> removeData(X data) {
+        FunSet<X> newSet = (FunSet<X>) this.clone();
+        newSet.remove(data);
+        return newSet;
     }
 
-    // s \/ [data]
+    // s \/ [d1, ..., dn]
     public FunSet<X> addList(List<X> list) {
-        var targetSet = new FunSet<>(this);
-        targetSet.set.addAll(list);
-        return targetSet;
+        FunSet<X> newSet = (FunSet<X>) this.clone();
+        newSet.addAll(list);
+        return newSet;
     }
 
     // s1 \/ s2
     public FunSet<X> union(FunSet<X> theSet) {
-        var targetSet = new FunSet<>(this);
-        targetSet.set.addAll(theSet.set);
-        return targetSet;
+        FunSet<X> newSet = (FunSet<X>) this.clone();
+        newSet.addAll(theSet);
+        return newSet;
     }
 
     // \/ {s1, s2, ..., sn}
-    public static <X> FunSet<X> unionList(List<FunSet<X>> theSets) {
-        var targetSet = new FunSet<X>();
-        for (FunSet<X> theSet : theSets)
-            targetSet.set.addAll(theSet.set);
-        return targetSet;
+    public static <X> FunSet<X> unionSets(List<FunSet<X>> allSets) {
+        FunSet<X> newSet = new FunSet<>();
+        for (FunSet<X> theSet : allSets)
+            newSet.addAll(theSet);
+        return newSet;
+    }
+
+    // s1 /\ s2
+    public static <X> FunSet<X> retainSets(FunSet<X> set1, FunSet<X> set2) {
+        FunSet<X> newSet = (FunSet<X>) set1.clone();
+        newSet.retainAll(set2);
+        return newSet;
+    }
+
+    // /\ {s1, s2, ..., sn}
+    public static <X> FunSet<X> retainSets(List<FunSet<X>> allSets) {
+        if(allSets.isEmpty())
+            return new FunSet<>();
+        FunSet<X> newSet = (FunSet<X>)allSets.get(0).clone();
+        for (FunSet<X> theSet : allSets)
+            newSet.retainAll(theSet);
+        return newSet;
     }
 
     // s1 - s2
     public FunSet<X> sub(FunSet<X> theSet) {
-        var targetSet = new FunSet<>(this);
-        targetSet.set.removeAll(theSet.set);
-        return targetSet;
-    }
-
-    public boolean contains(X data) {
-        return this.set.contains(data);
-    }
-
-    public boolean isSame(FunSet<X> theSet) {
-        if (theSet == null)
-            return false;
-        if (this.set.size() != theSet.set.size())
-            return false;
-        for (X data : this.set) {
-            if (!theSet.set.contains(data))
-                return false;
-        }
-        return true;
-    }
-
-    public List<X> toList() {
-        return this.set.stream().toList();
-    }
-
-    public int size() {
-        return this.set.size();
+        FunSet<X> newSet = (FunSet<X>) this.clone();
+        newSet.removeAll(theSet);
+        return newSet;
     }
 
     public Layout.T layout(){
         return Layout.halign(List.of(Layout.str("{"),
                 Layout.halignSepRight(Layout.str(", "),
-                        this.set.stream().map(x -> Layout.str(x.toString())).collect(Collectors.toList())),
+                        this.stream().map(x -> Layout.str(x.toString())).collect(Collectors.toList())),
                 Layout.str("}")));
+    }
+
+    public List<X> toList() {
+        return List.copyOf(this);
     }
 
     public static Layout.T status(){

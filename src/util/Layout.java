@@ -169,6 +169,13 @@ public class Layout {
         theStyle = style;
         print(x);
     }
+
+    public static void printDefault(T x) {
+        thePrinter = System.out::print;
+        theStyle = Style.C;
+        print(x);
+    }
+
 }
 
 

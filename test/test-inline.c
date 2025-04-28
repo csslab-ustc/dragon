@@ -6,7 +6,7 @@ int main(){
 
     a = 5;
     b = 6;
-    a = foo(a, b);
+    a = bar(a, b);
 
     return 0;
 }
@@ -16,3 +16,12 @@ int foo(int x, int y) {
     k = x + y;
     return k;
 }
+
+
+int bar(int x, int y) {
+    int k;
+    k = x + y;
+    return k;
+}
+
+

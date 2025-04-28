@@ -2,25 +2,22 @@ package util.lattice;
 
 /*
              T
-     /   /  ...    \       \
+      /   /      \       \
+     /   /  ...    \      \
     x1  x2        x_{n-1}  xn
-     \   \  ...   /      /
+     \   \  ...   /       /
+      \   \      /       /
             _|_
 */
 
 import util.Error;
+import util.Todo;
 
 import java.util.List;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
-public class FlatLattice2<X, Names extends FlatLattice2.N> {
-    // names
-    public interface N{
-        String toString(FlatLattice2.T t);
-    }
-    private final Class<?> nameOfClass;
-
+public class FlatLattice2<X> {
     // datatypes
     public sealed interface T
         permits Top, Middle, Bot{
@@ -32,31 +29,19 @@ public class FlatLattice2<X, Names extends FlatLattice2.N> {
     public record Bot<X>() implements T{
     }
 
-    // fields
+    // current state
     public T state;
     LinkedList<Consumer<T>> promises;
 
     // constructors
-    @SafeVarargs
-    public FlatLattice2(T t, Names... names){
+    public FlatLattice2(T t){
         this.state = t;
         this.promises = new LinkedList<>();
-        // pass names
-        if(names.length != 0){
-            throw new Error("do not call this constructor with nonempty names");
-        }
-        this.nameOfClass = names.getClass().componentType();
     }
 
-    @SafeVarargs
-    public FlatLattice2(X data, Names... names) {
+    public FlatLattice2(X data) {
         this.state = new Middle<>(data);
         this.promises = new LinkedList<>();
-        // pass names
-        if(names.length != 0){
-            throw new Error("do not call this constructor with nonempty names");
-        }
-        this.nameOfClass = names.getClass().componentType();
     }
 
     // methods
@@ -73,7 +58,7 @@ public class FlatLattice2<X, Names extends FlatLattice2.N> {
     }
 
     // least upper bound:
-    public void lub(FlatLattice2<X, Names> other){
+    public void lub(FlatLattice2<X> other){
         switch(this.state){
             case Bot() -> {
                 this.state = other.state;
@@ -102,16 +87,16 @@ public class FlatLattice2<X, Names extends FlatLattice2.N> {
         }
     }
 
-    public void lub(List<FlatLattice2<X, Names>> others){
+    public void lub(List<FlatLattice2<X>> others){
         others.forEach(this::lub);
     }
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof FlatLattice.T obj)){
+        if(!(o instanceof FlatLattice obj)){
             return false;
         }
-        return this.state.equals(obj);
+        return this.state.equals(obj.state);
     }
 
     @Override
@@ -122,13 +107,7 @@ public class FlatLattice2<X, Names extends FlatLattice2.N> {
 
     @Override
     public String toString() {
-        String s;
-        try {
-            s =  ((FlatLattice2.N)nameOfClass.getDeclaredConstructor().newInstance()).toString(this.state);
-        }catch (Exception e){
-            throw new Error(e);
-        }
-        return s;
+        throw new Todo();
     }
 
 }

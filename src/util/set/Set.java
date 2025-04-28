@@ -1,16 +1,16 @@
 package util.set;
 
-// an abstract imperative set interface.
+// an abstract set interface.
 // with several concrete implementations:
-//   1. HashSet (in LocalHashSet.java): a hash-based set;
+//   1. FunSet (in FunSet.java): a functional set;
 //   2. BitSet (in BitSet.java): a bit-vector-based set; and
 //   3. OrderSet (in OrderSet.java): an ordered set.
 public interface Set<X> {
     // s \/ {data}
-    void add(X data);
+    void addData(X data);
 
     // s - {data}
-    void remove(X data);
+    void removeData(X data);
 
     // s1 \/ s2
     void union(Set<X> theSet);
@@ -23,6 +23,4 @@ public interface Set<X> {
     // in:
     // https://www.artima.com/articles/josh-bloch-on-design#part13
     Set<X> getClone();
-
-    boolean isSame(Set<X> theSet);
 }

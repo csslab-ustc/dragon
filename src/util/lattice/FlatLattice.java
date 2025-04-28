@@ -9,15 +9,11 @@ package util.lattice;
              _|_
      */
 
-import util.Error;
+import util.Layout;
 
-public class FlatLattice<X, Names extends FlatLattice.N> {
-    // names
-    public interface N{
-        String toString(FlatLattice.T t);
-    }
-    private final Class<?> nameOfClass;
+public class FlatLattice<X> {
 
+    // all possible states:
     public sealed interface T
         permits Top, Middle, Bot{
     }
@@ -27,21 +23,15 @@ public class FlatLattice<X, Names extends FlatLattice.N> {
     }
     public record Bot() implements T{}
 
-    // the state:
-    public final T state;
+    // current state:
+    public T state;
 
-    @SafeVarargs
-    public FlatLattice(T t, Names... names) {
+    public FlatLattice(T t) {
         this.state = t;
-        // pass names
-        if(names.length != 0){
-            throw new Error("do not call this constructor with nonempty names");
-        }
-        this.nameOfClass = names.getClass().componentType();
     }
 
     // least upper bound:
-    public T lub(FlatLattice<X, Names> right){
+    public T lub(FlatLattice<X> right){
         switch(this.state){
             case Bot() -> {
                 return right.state;
@@ -67,12 +57,52 @@ public class FlatLattice<X, Names extends FlatLattice.N> {
         }
     }
 
+    public boolean mayLiftTo(FlatLattice<X> other){
+        switch(this.state){
+            case Bot() -> {
+                switch (other.state){
+                    case Bot() ->{
+                        return false;
+                    }
+                    case Middle(var data2)->{
+                        this.state = new Middle<>(data2);
+                        return true;
+                    }
+                    case Top()->{
+                        this.state = new Top();
+                        return true;
+                    }
+                }
+            }
+            case Middle(var data) -> {
+                switch (other.state){
+                    case Bot() ->{
+                        return false;
+                    }
+                    case Middle(var data2)->{
+                        if(data.equals(data2))
+                            return false;
+                        this.state = new Middle<>(data2);
+                        return true;
+                    }
+                    case Top()->{
+                        this.state = new Top();
+                        return true;
+                    }
+                }
+            }
+            case Top() -> {
+                return false;
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof FlatLattice.T obj)){
+        if(!(o instanceof FlatLattice<?> obj)){
             return false;
         }
-        return this.state.equals(obj);
+        return this.state.equals(obj.state);
     }
 
     @Override
@@ -80,19 +110,36 @@ public class FlatLattice<X, Names extends FlatLattice.N> {
         return this.state.hashCode();
     }
 
-
     @Override
     public String toString() {
-        String s;
-        try {
-            s =  ((FlatLattice.N)nameOfClass.getDeclaredConstructor().newInstance()).toString(this.state);
-        }catch (Exception e){
-            throw new Error(e);
-        }
-        return s;
+        return switch (this.state){
+            case Bot() -> "bot";
+            case Middle(var data) -> "middle<" + data.toString() + ">";
+            case Top() -> "top";
+        };
+    }
+
+    public Layout.T layout(){
+        return Layout.str(this.toString());
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

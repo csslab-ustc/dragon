@@ -3,8 +3,8 @@ package cfg.lab2;
 import cfg.Cfg;
 import cfg.Cfg.Exp;
 import cfg.Cfg.Stm;
-import cfg.SamplePrograms;
 import control.Control;
+import frontend.Frontend;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import util.*;
@@ -204,7 +204,9 @@ public class Liveness {
         @Test
         public void test() {
 //            Control.loggedMethodNames.add("cfg.Liveness");
-            new Liveness().doitProgram(SamplePrograms.progSumRec);
+
+            var cfg = new Frontend().buildCfg("test/sum-rec.c");
+            new Liveness().doitProgram(cfg);
         }
     }
 }

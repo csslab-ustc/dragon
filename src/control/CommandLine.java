@@ -53,6 +53,16 @@ public class CommandLine {
                                 error("unknown argument: " + x);
                             }
                         }),
+                new Arg("dom",
+                        "{cooper|def}",
+                        "which dominator algorithm to use",
+                        Kind.String,
+                        (Object x) -> {
+                            switch ((String)x){
+                                case "cooper": Control.Cfg.domAlgorithm = Control.Cfg.DomAlgorithm.Cooper;
+                                case "def": Control.Cfg.domAlgorithm = Control.Cfg.DomAlgorithm.Definition;
+                                default: error("unknown argument: " + x);
+                        }}),
                 new Arg("dot",
                         "<ir>",
                         "visualize the given ir",
@@ -81,6 +91,13 @@ public class CommandLine {
                         (_) -> {
                             usage();
                             System.exit(1);
+                        }),
+                new Arg("inline",
+                        "<N>",
+                        "the inline threshold",
+                        Kind.Int,
+                        (Object n) -> {
+                            Control.Inline.threshold = (Integer) n;
                         }),
                 new Arg("log",
                         "<pass>",

@@ -1,5 +1,4 @@
-import cfg.Cfg;
-import frontend.Driver;
+import frontend.Frontend;
 
 public class Dragon {
     public static void main(String[] args) throws Exception {
@@ -7,7 +6,6 @@ public class Dragon {
             System.out.println("Usage: Dragon {file path}");
             System.exit(1);
         }
-        Driver driver = new Driver(args[0]);
-        Cfg.Program.pp(driver.getControlFlowGraph());
+        var cfg = new Frontend().buildCfg(args[0]);
     }
 }

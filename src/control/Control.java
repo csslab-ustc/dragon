@@ -1,6 +1,7 @@
 package control;
 
 import ast.Ast;
+import util.Id;
 import util.Layout;
 
 import java.util.HashMap;
@@ -98,6 +99,11 @@ public class Control {
     // the CFG
     public static class Cfg {
         public static boolean embedComment = false;
+        public enum DomAlgorithm{
+            Cooper,
+            Definition
+        }
+        public static DomAlgorithm domAlgorithm = DomAlgorithm.Definition;
     }
 
     // timer
@@ -151,6 +157,11 @@ public class Control {
             }
             return y;
         }
+    }
+
+    // inline
+    public static class Inline {
+        public static int threshold = 400;
     }
 }
 

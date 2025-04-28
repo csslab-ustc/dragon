@@ -7,29 +7,32 @@ package util.lattice;
 import util.map.FunMap;
 
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.*;
 
-// map X to the lattice L
-public class MapLattice<X, L> {
-    // we use a functional map because we want to
-    // avoid the pain of memoization.
+// map X to a lattice L
+public class MapLattice<X, L> implements Cloneable{
     public FunMap<X, L> state;
 
-    protected MapLattice(FunMap<X, L> map) {
+    public MapLattice(FunMap<X, L> map) {
         this.state = map;
     }
 
-    public MapLattice(List<X> keys, L lattice) {
+    public MapLattice(List<X> keys, Supplier<L> latticeGenerator) {
         this.state = new FunMap<>();
         for(X k: keys)
-            this.state = this.state.put(k, lattice);
+            this.state = this.state.putData(k, latticeGenerator.get());
     }
 
-    public FunMap<X, L> lub(MapLattice<X, L> right,
-                                 BiFunction<L, L, L> lub) {
-        var newState = this.state.join(right.state, lub);
-        return newState;
+    public boolean mayLiftTo(MapLattice<X, L> other,
+                          BiFunction<L, L, Boolean> liftConsumer) {
+        boolean changed = false;
+        for(X k: this.state.keySet()){
+            var lattice1 = this.state.get(k);
+            var lattice2 = other.state.get(k);
+            if (liftConsumer.apply(lattice1, lattice2))
+                changed = true;
+        }
+        return changed;
     }
 
     public FunMap<X, L> lub(List<MapLattice<X, L>> right,
@@ -45,21 +48,37 @@ public class MapLattice<X, L> {
         return this.state.get(key);
     }
 
-    public FunMap<X, L> put(X key, L value) {
-        return this.state.put(key, value);
+    public void update(X key, L value) {
+        this.state.put(key, value);
     }
 
-    // we do not use "equals", because that also force us
-    // to implement "hashCode"
     @Override
     public boolean equals(Object right) {
-        if(!(right instanceof MapLattice))
+        if(!(right instanceof MapLattice<?, ?> obj))
             return false;
-        return this.state.isSame(((MapLattice<X, L>)right).state);
+        return this.state.equals(obj.state);
     }
 
-    public void print(Function<X, String> f1, Function<L, String> f2) {
-        this.state.print(f1, f2);
+    @Override
+    public int hashCode() {
+        return this.state.hashCode();
+    }
+
+    @Override
+    public MapLattice<X, L> clone() {
+        try {
+            var x = (MapLattice<X, L>)super.clone();
+            x.state = (FunMap<X, L>)state.clone();
+            return x;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return this.state.toString();
     }
 }
 

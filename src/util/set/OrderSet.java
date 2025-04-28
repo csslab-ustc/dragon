@@ -24,7 +24,7 @@ public class OrderSet<X> implements Set<X> {
     }
 
     // s \/ {data}
-    public void add(X data) {
+    public void addData(X data) {
         int theOrder = getOrder.apply(data);
         for (int i = 0; i < theList.size(); i++) {
             int currentOrder = getOrder.apply(theList.get(i));
@@ -41,7 +41,7 @@ public class OrderSet<X> implements Set<X> {
     }
 
     // s - {data}
-    public void remove(X data) {
+    public void removeData(X data) {
         int theOrder = getOrder.apply(data);
         for (int i = 0; i < theList.size(); i++) {
             int currentOrder = getOrder.apply(theList.get(i));
@@ -57,7 +57,7 @@ public class OrderSet<X> implements Set<X> {
     public void union(Set<X> theSet) {
         var targetSet = (OrderSet<X>) theSet;
         for (X target : targetSet.theList) {
-            this.add(target);
+            this.addData(target);
         }
     }
 

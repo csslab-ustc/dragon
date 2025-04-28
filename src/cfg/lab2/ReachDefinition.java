@@ -4,11 +4,11 @@ import cfg.Cfg;
 import cfg.Cfg.Exp;
 import cfg.Cfg.Stm;
 import control.Control;
+import frontend.Frontend;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import util.*;
 import util.set.FunSet;
-import frontend.Driver;
 
 import java.util.HashSet;
 import java.util.List;
@@ -121,10 +121,10 @@ public class ReachDefinition {
         List<FunSet<Stm.T>> outForPrecessors = predecessors.stream().
                 map(n -> outPropForBlock.getOrInitConst(n, new FunSet<>())).toList();
         // liveIn = \/ liveOut[preds]
-        FunSet<Stm.T> liveOuts = new FunSet<>(outForPrecessors, true);
+        FunSet<Stm.T> liveOuts = FunSet.unionSets(outForPrecessors);
         var oldLiveIn = inPropForBlock.get(node); // may be null
         // determine whether "liveOut" has changed
-        if (!liveOuts.isSame(oldLiveIn)) {
+        if (!liveOuts.equals(oldLiveIn)) {
             isChanged = true;
             // record the liveOut for this node
             inPropForBlock.put(node, liveOuts);
@@ -190,8 +190,8 @@ public class ReachDefinition {
 
 
                 // clear the defs property
-                // defSitesProp.clear();
-                // predPropForBlock.clear();
+//                defSitesProp.clear();
+//                predPropForBlock.clear();
             }
         }
     }
@@ -231,13 +231,13 @@ public class ReachDefinition {
     class UnitTest {
         @Test
         public void test() throws Exception {
-            Driver driver = new Driver("test/test-reach-def.c");
-            Cfg.Program.T cfg = driver.getControlFlowGraph();
+            var cfg = new Frontend().buildCfg("test/test-reach-def.c");
 
-            // comment the following line, if you do NOT want the result.
+            // comment the following line, if you do NOT need the log.
             Control.loggedMethodNames.add("cfg.ReachDef");
             new ReachDefinition().doitProgram(cfg);
-            // finally result should be:
+
+            // output should look like:
             // ```
             // reach definition execution rounds = 3
             // Elapsed time: @XXX ms

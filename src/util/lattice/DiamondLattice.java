@@ -1,6 +1,7 @@
 package util.lattice;
 
 /* the Diamond lattice:
+this is really a special form of flat lattice
 
      T
    /   \
@@ -10,15 +11,7 @@ package util.lattice;
 
  */
 
-import util.Error;
-
-public class DiamondLattice<Names extends DiamondLattice.N> {
-    // names
-    public interface N{
-        String toString(DiamondLattice.T t);
-    }
-    private final Class<?> nameOfClass;
-
+public class DiamondLattice {
     // possible states
     public sealed interface T
         permits Bot, M0, M1, Top{
@@ -29,20 +22,15 @@ public class DiamondLattice<Names extends DiamondLattice.N> {
     public record Bot() implements T {}
 
     // current state
-    public final T state;
+    public T state;
 
-    @SafeVarargs
-    public DiamondLattice(T state, Names... names) {
+    public DiamondLattice(T state) {
         this.state = state;
         // only to pass lattice names, ugly
-        if(names.length != 0){
-            throw new Error("do not call this constructor with nonempty names");
-        }
-        this.nameOfClass = names.getClass().componentType();
     }
 
     // least upper bound: |_|
-    public T lub(DiamondLattice<Names> other) {
+    public T lub(DiamondLattice other) {
         switch (this.state) {
             case Bot() -> {
                 return other.state;
@@ -73,21 +61,72 @@ public class DiamondLattice<Names extends DiamondLattice.N> {
         }
     }
 
+    // lift "this" at least to "other"
+    public Boolean mayLiftTo(DiamondLattice other) {
+        switch (this.state) {
+            case Bot() -> {
+                switch (other.state) {
+                    case Bot() -> {
+                        return false;
+                    }
+                    default -> {
+                        this.state = other.state;
+                        return true;
+                    }
+                }
+            }
+            case M0() -> {
+                switch (other.state){
+                    case Bot(), M0() -> {
+                        return false;
+                    }
+                    case M1(), Top() -> {
+                        this.state = new Top();
+                        return true;
+                    }
+                }
+            }
+            case M1() -> {
+                switch (other.state){
+                    case Bot(), M1() -> {
+                        return false;
+                    }
+                    case M0(), Top() -> {
+                        this.state = new Top();
+                        return true;
+                    }
+                }
+            }
+            case Top() -> {
+                return false;
+            }
+        }
+    }
+
     public boolean isTop(){
-        return this.state.getClass().equals(Top.class);
+        return switch (this.state){
+            case Top() -> true;
+            default -> false;
+        };
     }
 
     public boolean isM0(){
-        return this.state.getClass().equals(M0.class);
+        return switch (this.state){
+            case M0() -> true;
+            default -> false;
+        };
     }
 
     public boolean isBot(){
-        return this.state.getClass().equals(Bot.class);
+        return switch (this.state){
+            case Bot() -> true;
+            default -> false;
+        };
     }
 
     @Override
     public boolean equals(Object other){
-        if(!(other instanceof DiamondLattice<?> obj)){
+        if(!(other instanceof DiamondLattice obj)){
             return false;
         }
         return this.state.equals(obj.state);
@@ -100,13 +139,12 @@ public class DiamondLattice<Names extends DiamondLattice.N> {
 
     @Override
     public String toString(){
-        String s;
-        try {
-            s =  ((DiamondLattice.N)nameOfClass.getDeclaredConstructor().newInstance()).toString(this.state);
-        }catch (Exception e){
-            throw new Error(e);
-        }
-        return s;
+        return switch (this.state) {
+            case Bot() -> "Bot";
+            case M0() -> "M0";
+            case M1() -> "M1";
+            case Top() -> "Top";
+        };
     }
 
 }

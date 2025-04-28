@@ -1,18 +1,14 @@
 package util.map;
 
-import util.Error;
-
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 // a functional map.
-public class FunMap<X, Y> {
-    private final java.util.HashMap<X, Y> map;
+public class FunMap<X, Y> extends HashMap<X, Y> {
 
     public FunMap() {
-        this.map = new java.util.HashMap<>();
+        super();
     }
 //    public FunMap(X x) {
 //        this.map = new java.util.HashSet<>();
@@ -28,62 +24,31 @@ public class FunMap<X, Y> {
 //        sets.forEach(set -> this.map.addAll(set.map));
 //    }
 
-    @SuppressWarnings("unchecked")
-    private FunMap(FunMap<X, Y> theMap) {
-        try {
-            this.map = (java.util.HashMap<X, Y>) theMap.map.clone();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
-    }
-
     // t = s + {k: v}
-    public FunMap<X, Y> put(X k, Y v) {
-        var newMap = new FunMap<>(this);
-        newMap.map.put(k, v);
+    public FunMap<X, Y> putData(X k, Y v) {
+        var newMap = (FunMap<X, Y>)this.clone();
+        newMap.put(k, v);
         return newMap;
     }
 
     public FunMap<X, Y> join(FunMap<X, Y> theMap,
                              BiFunction<Y, Y, Y> f) {
         FunMap<X, Y> newMap = new FunMap<>();
-        this.map.forEach((k, v) -> {
+        this.forEach((k, v) -> {
             Y value = theMap.get(k);
             Y newValue = f.apply(v, value);
-            newMap.map.put(k, newValue);
+            newMap.put(k, newValue);
         });
         return newMap;
     }
 
-    public Y get(X k) {
-        return this.map.get(k);
-    }
-
-    // we don't want to overwrite "equals",
-    // because we also need to overwrite "hashCode" otherwise.
-    public boolean isSame(FunMap<X, Y> rightMap) {
-        if (rightMap == null)
-            return false;
-        if (this.map.size() != rightMap.map.size())
-            return false;
-        for(Map.Entry<X, Y> entry: this.map.entrySet()) {
-            X thisKey = entry.getKey();
-            Y thisValue = entry.getValue();
-            Y rightValue = rightMap.get(thisKey);
-            if (thisValue == null || !thisValue.equals(rightValue)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public int size() {
-        return this.map.size();
+        return super.size();
     }
 
     public void print(){
         System.out.print("{");
-        this.map.forEach((key, value) -> {
+        this.forEach((key, value) -> {
             System.out.print(key.toString());
             System.out.print(" -> ");
             System.out.print(value.toString());
@@ -95,7 +60,7 @@ public class FunMap<X, Y> {
     public void print(Function<X, String> f1,
                       Function<Y, String> f2){
         System.out.print("{");
-        this.map.forEach((key, value) -> {
+        this.forEach((key, value) -> {
             System.out.print(f1.apply(key));
             System.out.print(" -> ");
             System.out.print(f2.apply(value));

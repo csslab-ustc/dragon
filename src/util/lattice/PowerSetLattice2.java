@@ -37,7 +37,6 @@ public class PowerSetLattice2<X> {
     private final HashSet<X> theSet;
     private LinkedList<Consumer<X>> promises;
 
-
     private static PowerSetLattice2 lookupOrPut(PowerSetLattice2 self){
         HashSet<PowerSetLattice2<?>> temp = allLattices;
         for (PowerSetLattice2<?> lattice : temp) {

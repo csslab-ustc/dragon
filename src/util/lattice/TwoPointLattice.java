@@ -9,14 +9,9 @@ package util.lattice;
  */
 
 import util.Error;
+import util.Layout;
 
-public class TwoPointLattice<Names extends TwoPointLattice.N> {
-    // names
-    public interface N{
-        String toString(TwoPointLattice.T t);
-    }
-    private final Class<?> nameOfClass;
-
+public class TwoPointLattice {
     // possible states
     public sealed interface T
         permits Bot, Top{
@@ -25,50 +20,63 @@ public class TwoPointLattice<Names extends TwoPointLattice.N> {
     public record Bot() implements T {}
 
     // the state
-    final T state;
+    T state;
 
-    @SafeVarargs
-    public TwoPointLattice(T state, Names... names) {
+    public TwoPointLattice(T state) {
         this.state = state;
-        // only to pass lattice names, ugly
-        if(names.length != 0){
-            throw new Error("do not call this constructor with nonempty names");
-        }
-        this.nameOfClass = names.getClass().componentType();
     }
 
     // least upper bound
-    public TwoPointLattice<Names> lub(TwoPointLattice<Names> other) {
+    public T lub(TwoPointLattice other) {
         switch (this.state) {
             case Bot() -> {
-                return new TwoPointLattice<>(other.state);
+                return other.state;
             }
             case Top() -> {
-                return new TwoPointLattice<>(this.state);
+                return this.state;
+            }
+        }
+    }
+
+    public boolean mayLiftTo(TwoPointLattice other) {
+        switch (this.state) {
+            case Bot() -> {
+                switch (other.state){
+                    case Bot() -> {
+                        return false;
+                    }
+                    case Top() -> {
+                        this.state = new Top();
+                        return true;
+                    }
+                }
+            }
+            case Top() -> {
+                return false;
             }
         }
     }
 
     public boolean isTop(){
         return switch (this.state) {
-            case TwoPointLattice.Bot() -> false;
-            case TwoPointLattice.Top() -> true;
+            case Bot() -> false;
+            case Top() -> true;
         };
     }
 
     public boolean isBot(){
         return switch (this.state) {
-            case TwoPointLattice.Bot() -> true;
-            case TwoPointLattice.Top() -> false;
+            case Bot() -> true;
+            case Top() -> false;
         };
     }
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof TwoPointLattice.T obj)){
+        if(!(o instanceof TwoPointLattice obj)){
             return false;
         }
-        return this.state.equals(obj);
+        return this.state.equals(obj.state);
     }
 
     @Override
@@ -78,13 +86,14 @@ public class TwoPointLattice<Names extends TwoPointLattice.N> {
 
     @Override
     public String toString() {
-        String s;
-        try {
-           s =  ((N)nameOfClass.getDeclaredConstructor().newInstance()).toString(this.state);
-        }catch (Exception e){
-            throw new Error(e);
-        }
-        return s;
+        return switch (this.state){
+            case Bot() -> "bot";
+            case Top() -> "top";
+        };
+    }
+
+    public Layout.T layout(){
+        return Layout.str(this.toString());
     }
 }
 

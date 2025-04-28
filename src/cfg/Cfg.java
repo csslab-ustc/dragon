@@ -316,6 +316,16 @@ public class Cfg {
             var layout = layout(t);
             Layout.print(layout, System.out::print, Layout.Style.C);
         }
+
+        public static int size(T b){
+            return switch (b) {
+                case Singleton(
+                        Label label,
+                        List<Stm.T> stms,
+                        Transfer.T transfer
+                ) -> stms.size() + 1;
+            };
+        }
     }
     // end of block
 
@@ -335,6 +345,100 @@ public class Cfg {
                                 Label exitBlock) implements T {
         }
 
+        // rename all variables and labels
+        public static T alphaRename(T func) {
+            switch (func) {
+                case Singleton(
+                        Type.T ty,
+                        Id id,
+                        List<Dec.T> formals,
+                        List<Dec.T> locals,
+                        List<Block.T> blocks,
+                        Label entryLabel,
+                        Label exitLabel
+                ) -> {
+                    // generate new names
+                    Property<Id, Id> newNameProp = new Property<>(Id::getPlist);
+                    java.util.function.Function<Dec.T, Dec.T> rename = (Dec.T dec) -> {
+                        switch (dec){
+                            case Dec.Singleton(Type.T type, Id id1) -> {
+                                var newId = Id.newNoname();
+                                newNameProp.put(id1, newId);
+                                return new Dec.Singleton(type, newId);
+                            }
+                        }
+                    };
+                    var newFormals = formals.stream().map(rename).toList();
+                    var newLocals = locals.stream().map(rename).toList();
+                    // generate new labels
+                    Property<Label, Label> newLabelProp = new Property<>(Label::getPlist);
+                    blocks.forEach(block -> {
+                        switch (block){
+                            case Block.Singleton(Label label,
+                                                 List<Stm.T> stms,
+                                                 Transfer.T transfer) -> newLabelProp.put(label, new Label());
+                        }
+                    });
+                    // rewrite
+                    var newBlocks = blocks.stream().map((b) -> {
+                        switch (b){
+                            case Block.Singleton(Label label,
+                                                 List<Stm.T> stms,
+                                                 Transfer.T transfer) -> {
+                                var newStms = stms.stream().map((s) -> {
+                                    switch (s){
+                                        case Stm.Assign(Label label1,
+                                                        Id x,
+                                                        Exp.T exp) ->{
+                                            Exp.T newExp = switch (exp){
+                                                case Exp.Bop(BinaryOperator.T op,
+                                                             List<Id> operands) ->
+                                                    new Exp.Bop(op, operands.stream().map(newNameProp::get).toList());
+                                                case Exp.Call(Id func1,
+                                                              List<Id> operands) ->
+                                                        new Exp.Call(func1, operands.stream().map(newNameProp::get).toList());
+                                                case Exp.Int(int n) -> exp;
+                                                case Exp.Eid(Id x1) -> new Exp.Eid(newNameProp.get(x1));
+                                                case Exp.Print(Id x1) -> new Exp.Print(newNameProp.get(x1));
+                                            };
+                                            return (Stm.T)new Stm.Assign(label1,
+                                                    newNameProp.get(x),
+                                                    newExp);
+                                        }
+                                    }
+                                }).toList();
+                                var newTransfer = switch (transfer){
+                                    case Transfer.If(Label label1,
+                                                     Id x,
+                                                     Label trueLabel,
+                                                     Label falseLabel) ->
+                                        new Transfer.If(label1,
+                                                newNameProp.get(x),
+                                                newLabelProp.get(trueLabel),
+                                                newLabelProp.get(falseLabel));
+                                    case Transfer.Jmp(Label label1, Label target) ->
+                                            new Transfer.Jmp(label1, newLabelProp.get(target));
+                                    case Transfer.Ret(Label label1, Id x) ->
+                                        new Transfer.Ret(label1, newNameProp.get(x));
+                                };
+                                return (Block.T)new Block.Singleton(newLabelProp.get(label),
+                                        newStms,
+                                        newTransfer);
+                            }
+                        }
+                    }).toList();
+                    return new Function.Singleton(ty,
+                            id,
+                            newFormals,
+                            newLocals,
+                            newBlocks,
+                            newLabelProp.get(entryLabel),
+                            newLabelProp.get(exitLabel)
+                            );
+                }
+            }
+        }
+
         public static Block.T getBlock(T func, Label label) {
             switch (func) {
                 case Singleton(
@@ -352,6 +456,22 @@ public class Cfg {
                         }
                     }
                     throw new Error(label.toString());
+                }
+            }
+        }
+
+        public static Plist getPlist(T func) {
+            switch (func) {
+                case Singleton(
+                        Type.T _,
+                        Id id,
+                        List<Dec.T> _,
+                        List<Dec.T> _,
+                        List<Block.T> blocks,
+                        Label entryBlock,
+                        Label exitBlock
+                ) -> {
+                    return id.getPlist();
                 }
             }
         }
@@ -376,7 +496,7 @@ public class Cfg {
                     HashMap<Label, Graph<Block.T>.Node> label2node = new HashMap<>();
                     // add all blocks to the graph
                     blocks.forEach(block -> {
-                        var node = graph.addNode(block);
+                        var node = graph.newAndAddNode(block);
                         label2node.put(Block.getLabel(block), node);
                     });
 
@@ -410,6 +530,44 @@ public class Cfg {
                         }
                 });
                     return new Tuple.Two<>(graph, label2node);
+                }
+            }
+        }
+
+        public static boolean isLeaf(T func) {
+            switch (func) {
+                case Singleton(
+                        Type.T retType,
+                        Id functionId,
+                        List<Dec.T> formals,
+                        List<Dec.T> locals,
+                        List<Block.T> blocks,
+                        _,
+                        _
+                ) -> {
+                    for (Block.T block : blocks) {
+                        switch (block){
+                            case Block.Singleton(Label label,
+                                                 List<Stm.T> stms,
+                                                 Transfer.T transfer) ->{
+                                for (Stm.T stm : stms) {
+                                    switch (stm){
+                                        case Stm.Assign(Label label1,
+                                                        Id x,
+                                                        Exp.T exp) ->{
+                                            switch (exp){
+                                                case Exp.Call _, Exp.Print _ ->{
+                                                    return false;
+                                                }
+                                                default -> {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return true;
                 }
             }
         }
@@ -463,6 +621,23 @@ public class Cfg {
         public static void pp(Function.T t){
             var layout = layout(t);
             Layout.print(layout, System.out::print, Layout.Style.C);
+        }
+
+        // the number of statements and transfers
+        public static int size(Function.T f) {
+            switch (f){
+                case Singleton(
+                        Type.T retType,
+                        Id functionId,
+                        List<Dec.T> formals,
+                        List<Dec.T> locals,
+                        List<Block.T> blocks,
+                        _,
+                        _
+                ) -> {
+                    return blocks.stream().map(Block::size).reduce(Integer::sum).orElse(0);
+                }
+            }
         }
     }
     // end of function
