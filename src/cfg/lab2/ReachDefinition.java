@@ -121,14 +121,14 @@ public class ReachDefinition {
         List<FunSet<Stm.T>> outForPrecessors = predecessors.stream().
                 map(n -> outPropForBlock.getOrInitConst(n, new FunSet<>())).toList();
         // liveIn = \/ liveOut[preds]
-        FunSet<Stm.T> liveOuts = FunSet.unionSets(outForPrecessors);
+        FunSet<Stm.T> liveIns = FunSet.unionSets(outForPrecessors);
         var oldLiveIn = inPropForBlock.get(node); // may be null
         // determine whether "liveOut" has changed
-        if (!liveOuts.equals(oldLiveIn)) {
+        if (!liveIns.equals(oldLiveIn)) {
             isChanged = true;
             // record the liveOut for this node
-            inPropForBlock.put(node, liveOuts);
-            FunSet<Stm.T> newLiveOut = doitBlock(node.getData(), liveOuts);
+            inPropForBlock.put(node, liveIns);
+            FunSet<Stm.T> newLiveOut = doitBlock(node.getData(), liveIns);
             // record the liveOut for this node
             outPropForBlock.put(node, newLiveOut);
         }
@@ -226,24 +226,6 @@ public class ReachDefinition {
         return trace.doit();
     }
     // end of program
-
-    @Nested
-    class UnitTest {
-        @Test
-        public void test() throws Exception {
-            var cfg = new Frontend().buildCfg("test/test-reach-def.c");
-
-            // comment the following line, if you do NOT need the log.
-            Control.loggedMethodNames.add("cfg.ReachDef");
-            new ReachDefinition().doitProgram(cfg);
-
-            // output should look like:
-            // ```
-            // reach definition execution rounds = 3
-            // Elapsed time: @XXX ms
-            // ```
-        }
-    }
 }
 // end of class
 

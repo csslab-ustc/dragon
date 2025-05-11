@@ -10,7 +10,7 @@ import java.util.List;
 
 
 // TODO: to fill in code
-public class CopyProp {
+public class CopyPropagation {
 
 
     // /////////////////////////////////////////////////////////
@@ -72,4 +72,6 @@ public class CopyProp {
                 Cfg.Program::pp);
         return trace.doit();
     }
+    // end of program
+
 }

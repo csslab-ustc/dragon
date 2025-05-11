@@ -17,7 +17,9 @@ public class WorkList<X> {
     }
 
     public void add(X x){
-        this.queue.add(x);
+        if(!queue.contains(x)){
+            this.queue.add(x);
+        }
     }
 
     public X remove(){

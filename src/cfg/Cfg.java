@@ -161,6 +161,14 @@ public class Cfg {
             }
         }
 
+        public static Label getLabel(T stm) {
+            switch (stm){
+                case Assign(Label label, _, _) -> {
+                    return label;
+                }
+            }
+        }
+
         public static Plist getPlist(T stm) {
             switch (stm){
                 case Assign(Label label, _, _) -> {

@@ -117,16 +117,6 @@ public class UnreachableBlock {
                 Cfg.Program::pp);
         return trace.doit();
     }
+    // end of program
 
-    @Nested
-    class UnitTest{
-
-        @Test
-        public void test() {
-            var cfg = new Frontend().buildCfg("test/test-deadcode.c");
-            Control.loggedMethodNames.add("cfg.UnreachableBlock");
-            Control.tracedMethodNames.add("cfg.UnreachableBlock");
-            new UnreachableBlock().doitProgram(cfg);
-        }
-    }
 }

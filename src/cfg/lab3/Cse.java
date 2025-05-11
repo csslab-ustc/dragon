@@ -42,16 +42,6 @@ public class Cse {
                 Cfg.Program::pp);
         return trace.doit();
     }
+    // end of program
 
-    @Nested
-    class UnitTest {
-        @Test
-        public void test() throws Exception {
-            Cfg.Program.T cfg = new Frontend().buildCfg("test/test-cse.c");
-
-            Control.tracedMethodNames.addLast("cfg.Cse");
-
-            var _ = new Cse().doitProgram(cfg);
-        }
-    }
 }

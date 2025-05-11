@@ -19,8 +19,8 @@ public class TwoPointLattice {
     public record Top() implements T {}
     public record Bot() implements T {}
 
-    // the state
-    T state;
+    // current state
+    protected T state;
 
     public TwoPointLattice(T state) {
         this.state = state;

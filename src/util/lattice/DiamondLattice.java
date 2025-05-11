@@ -31,34 +31,11 @@ public class DiamondLattice {
 
     // least upper bound: |_|
     public T lub(DiamondLattice other) {
-        switch (this.state) {
-            case Bot() -> {
-                return other.state;
-            }
-            case M0() -> {
-                switch (other.state){
-                    case Bot(), M0() -> {
-                        return this.state;
-                    }
-                    case M1(), Top() ->{
-                        return new Top();
-                    }
-                }
-            }
-            case M1() -> {
-                switch (other.state){
-                    case Bot(), M1() -> {
-                        return this.state;
-                    }
-                    case M0(), Top() ->{
-                        return new Top();
-                    }
-                }
-            }
-            case Top() -> {
-                return this.state;
-            }
-        }
+        // Here, you need to compute the least upper bound of the current lattice and "other", and return it.
+        // You can take some ideas from mayLiftTo.
+        // TODO: please add your code:
+        throw new util.Todo();
+
     }
 
     // lift "this" at least to "other"

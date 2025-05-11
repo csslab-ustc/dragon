@@ -24,7 +24,7 @@ public class FlatLattice<X> {
     public record Bot() implements T{}
 
     // current state:
-    public T state;
+    protected T state;
 
     public FlatLattice(T t) {
         this.state = t;
@@ -32,69 +32,15 @@ public class FlatLattice<X> {
 
     // least upper bound:
     public T lub(FlatLattice<X> right){
-        switch(this.state){
-            case Bot() -> {
-                return right.state;
-            }
-            case Middle(var data) -> {
-                switch (right.state){
-                    case Bot() ->{
-                        return this.state;
-                    }
-                    case Middle(var data2)->{
-                        if(data.equals(data2))
-                            return this.state;
-                        return new Top();
-                    }
-                    case Top()->{
-                        return right.state;
-                    }
-                }
-            }
-            case Top() -> {
-                return this.state;
-            }
-        }
+        // TODO: please add your code:
+        throw new util.Todo();
+
     }
 
     public boolean mayLiftTo(FlatLattice<X> other){
-        switch(this.state){
-            case Bot() -> {
-                switch (other.state){
-                    case Bot() ->{
-                        return false;
-                    }
-                    case Middle(var data2)->{
-                        this.state = new Middle<>(data2);
-                        return true;
-                    }
-                    case Top()->{
-                        this.state = new Top();
-                        return true;
-                    }
-                }
-            }
-            case Middle(var data) -> {
-                switch (other.state){
-                    case Bot() ->{
-                        return false;
-                    }
-                    case Middle(var data2)->{
-                        if(data.equals(data2))
-                            return false;
-                        this.state = new Middle<>(data2);
-                        return true;
-                    }
-                    case Top()->{
-                        this.state = new Top();
-                        return true;
-                    }
-                }
-            }
-            case Top() -> {
-                return false;
-            }
-        }
+        // TODO: please add your code:
+        throw new util.Todo();
+
     }
 
     @Override

@@ -207,16 +207,5 @@ public class ConstPropagation {
                 Cfg.Program::pp);
         return trace.doit();
     }
-
-    @Nested
-    class UnitTest {
-        @Test
-        public void test() {
-            var cfg = new Frontend().buildCfg("test/test-const-prop.c");
-
-            Control.tracedMethodNames.addLast("cfg.ConstProp");
-            var new_cfg = new ConstPropagation().doitProgram(cfg);
-
-        }
-    }
+    // end of program
 }

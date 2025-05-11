@@ -7,96 +7,71 @@ package util.lattice;
     {x1, ..., xn}
        /   \
        .....
-  \            /
+    \         /
   {x1} ...   {xn}
        \    /
          {}
 
  */
 
+import control.Control;
 import util.Layout;
-import util.Todo;
 import util.set.FunSet;
 
 import java.util.HashSet;
 import java.util.List;
 
-// X: the element type, not the set type
+// X: the set element type, not the set type
 public class PowerSetLattice<X> {
 
-    private static int numDistinctPowerSets = 0;
-
-    // we memoize all sets that have appeared in the lattice
+    // we memoize all power sets that have appeared
     // this will not only save spaces, but also speed up equality testing.
-    private static HashSet<PowerSetLattice<?>> allLattices = new HashSet<>();
+    private static HashSet<FunSet<?>> allSets = new HashSet<>();
 
     // the current state
-    private final FunSet<X> theSet;
+    protected FunSet<X> theSet;
 
-    @SuppressWarnings("all")
-    private static <X> PowerSetLattice<X> lookupOrPut(PowerSetLattice self){
-        HashSet<PowerSetLattice<?>> temp = allLattices;
-        for (PowerSetLattice<?> lattice : temp) {
-            if (lattice.theSet.equals(self.theSet)) {
-                return (PowerSetLattice<X>)lattice;
+//    @SuppressWarnings("unchecked")
+    private static <X> FunSet<X> lookupOrAdd(FunSet<X> theSet) {
+        for (FunSet<?> currentSet : allSets) {
+            if (currentSet.equals(theSet)) {
+                return (FunSet<X>)currentSet;
             }
         }
-        numDistinctPowerSets++;
-        temp.add(self);
-        return (PowerSetLattice<X>)self;
+        allSets.add(theSet);
+        return theSet;
     }
 
 
-    private PowerSetLattice(){
-        this.theSet = new FunSet<>();
+    protected PowerSetLattice(){
+        FunSet<X> set = lookupOrAdd(new FunSet<>());
+        this.theSet = set;
     }
 
-    private PowerSetLattice(X x){
-        this.theSet = new FunSet<>(x);
+    protected PowerSetLattice(X x){
+        FunSet<X> set = lookupOrAdd(new FunSet<>(x));
+        this.theSet = set;
     }
 
-    private PowerSetLattice(FunSet<X> theSet){
-        this.theSet = theSet;
+    protected PowerSetLattice(FunSet<X> theSet){
+        FunSet<X> set = lookupOrAdd(theSet);
+        this.theSet = set;
     }
 
-    private PowerSetLattice(List<X> elements){
-        this.theSet = new FunSet<>(elements);
-    }
-
-    // factory methods
-    public static <X> PowerSetLattice<X> newEmpty(){
-        PowerSetLattice<X> lattice = new PowerSetLattice<>();
-        return lookupOrPut(lattice);
-    }
-
-    public static <X> PowerSetLattice<X> newSingleton(X x){
-        PowerSetLattice<?> lattice = new PowerSetLattice<>(x);
-        return lookupOrPut(lattice);
-    }
-
-    public static <X> PowerSetLattice<X> newList(List<X> list) {
-        return lookupOrPut(new PowerSetLattice<X>(list));
-    }
-
-    public static <X> PowerSetLattice<X> newSet(FunSet<?> set) {
-        return lookupOrPut(new PowerSetLattice<>(set));
-    }
-
-    // init the class
-    public static <X> void init() {
-        allLattices = new HashSet<>();
+    protected PowerSetLattice(List<X> elements){
+        FunSet<X> set = lookupOrAdd(new FunSet<>(elements));
+        this.theSet = set;
     }
 
     // least upper bound
-    public PowerSetLattice<X> lub(PowerSetLattice<X> right) {
-        PowerSetLattice<X> result = new PowerSetLattice<>(this.theSet.union(right.theSet));
-        return lookupOrPut(result);
+    public boolean mayLiftTo(PowerSetLattice<X> other) {
+        // TODO: please add your code:
+        throw new util.Todo();
+
     }
 
-    // greatest lower bound, which is used to create a reversed powerset.
-    public PowerSetLattice<X> glb(PowerSetLattice<X> right) {
-        throw new Todo(this);
-//        return new PowerSetLattice<>(this.theSet.union(right.theSet));
+    public FunSet<X> getSet() {
+        return this.theSet;
     }
 
     @Override
@@ -104,7 +79,9 @@ public class PowerSetLattice<X> {
         if (!(o instanceof PowerSetLattice<?> obj)) {
             return false;
         }
-        return this.theSet.equals(obj.theSet);
+        // as we memoize all sets, so that equality
+        // testing is address testing.
+        return this.theSet==obj.theSet;
     }
 
     @Override
@@ -112,24 +89,21 @@ public class PowerSetLattice<X> {
         return this.theSet.hashCode();
     }
 
-    public FunSet<X> getSet() {
-        return this.theSet;
-    }
-
-    public static <X> PowerSetLattice<X> reduce(PowerSetLattice<X> start,
-                                            List<PowerSetLattice<X>> latticeList) {
-        return latticeList.stream().reduce(start,
-                ( result, element) ->
-                        newSet(result.theSet.union(element.theSet)));
+    @Override
+    public String toString() {
+        return this.theSet.toString();
     }
 
     public Layout.T layout() {
         return this.theSet.layout();
     }
 
-    public static void clear(){
-        System.out.println("number of sets: " + numDistinctPowerSets);
-        numDistinctPowerSets = 0;
+    public static void printBeforeClear(){
+        Control.logln("number of distinct sets: " + allSets.size());
+        for(FunSet<?> set : allSets){
+            Control.logln(set.toString());
+        }
+        allSets.clear();
     }
 }
 

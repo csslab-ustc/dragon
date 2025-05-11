@@ -77,7 +77,7 @@
 //            var map = defaultMapForAll;
 //            for (var funMap : funMaps) {
 //                map = map.join(funMap,
-//                        ZeroLattice::lub);
+//                        ZeroLattice::mayLiftTo);
 //            }
 //            return map;
 //        }
@@ -176,7 +176,7 @@
 //                            new Context<String, ZeroLattice>(operands.size(), ZeroLattice.newBottom()));
 //                theContext.merge(contextFreeKey,
 //                        operands.stream().map(liveIn::get).toList(),
-//                        ZeroLattice::lub);
+//                        ZeroLattice::mayLiftTo);
 //
 //                // #2 step: take the return value from the callee
 //                ZeroLattice retValue = outFuncProp.getInitConst(target,
@@ -340,7 +340,7 @@
 //                        ZeroLattice.newTop());
 //                Context<String, ZeroLattice> argValues = inFuncProp.get(functionId);
 //                if(argValues != null) {
-//                    var list = argValues.collapse(contextFreeKey, ZeroLattice::lub);
+//                    var list = argValues.collapse(contextFreeKey, ZeroLattice::mayLiftTo);
 ////                    list.forEach(ZeroLattice::print);
 //                    Integer index = 0;
 //                    for(Cfg.Dec.T x: formals) {
@@ -400,8 +400,8 @@
 //                            null);
 ////                } while (isChanged);
 //
-//                // clear the defs property
-////                predProp.clear();
+//                // printBeforeClear the defs property
+////                predProp.printBeforeClear();
 //            }
 //        }
 //    }
@@ -422,8 +422,8 @@
 //            }
 //        }
 //        System.out.println("execution rounds = " + rounds);
-//        inProp.clear();
-//        outProp.clear();
+//        inProp.printBeforeClear();
+//        outProp.printBeforeClear();
 //    }
 //    // end of program
 //}

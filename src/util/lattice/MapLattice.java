@@ -65,6 +65,7 @@ public class MapLattice<X, L> implements Cloneable{
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public MapLattice<X, L> clone() {
         try {
             var x = (MapLattice<X, L>)super.clone();

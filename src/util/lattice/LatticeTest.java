@@ -1,6 +1,9 @@
 package util.lattice;
 
 
+import util.Id;
+import util.set.FunSet;
+
 public class LatticeTest {
 
     static class IntFlatLattice extends FlatLattice<Integer> {
@@ -26,14 +29,14 @@ public class LatticeTest {
         }
 
         public boolean mayLiftTo(IntFlatLattice other) {
-            return super.mayLiftTo((FlatLattice)other);
+            return super.mayLiftTo((FlatLattice) other);
         }
 
         @Override
         public String toString() {
-            return switch (this.state){
+            return switch (this.state) {
                 case Bot() -> "no-value";
-                case FlatLattice.Middle(var v) -> "int<"+v.toString()+">";
+                case FlatLattice.Middle(var v) -> "int<" + v.toString() + ">";
                 case FlatLattice.Top() -> "many-value";
             };
         }
@@ -55,11 +58,11 @@ public class LatticeTest {
             return new NullLattice(new Top());
         }
 
-        public NullLattice lub(NullLattice other){
+        public NullLattice lub(NullLattice other) {
             return new NullLattice(super.lub(other));
         }
 
-        public void mayLiftTo(NullLattice other){
+        public void mayLiftTo(NullLattice other) {
             super.mayLiftTo(other);
         }
 
@@ -72,19 +75,39 @@ public class LatticeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
-    public void f() {
-        // test the flat lattice
-        {
-            var l1 = IntFlatLattice.newNone();
-            var l2 = IntFlatLattice.newNone();
-            var l3 = IntFlatLattice.newSingleton(42);
-            var l4 = IntFlatLattice.newSingleton(42);
-            System.out.println(l1.lub(l2).lub(l3).lub(l4));
+    // a power set lattice of id
+    static class IdPowsetLattice extends PowerSetLattice<Id> {
 
+        public IdPowsetLattice(FunSet<Id> set) {
+            super(set);
         }
 
-        // test the two point Lattice
+        public IdPowsetLattice(Id x) {
+            super(x);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString();
+        }
+
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testFlatLattice() {
+
+        // test the flat lattice
+        var l1 = IntFlatLattice.newNone();
+        var l2 = IntFlatLattice.newNone();
+        var l3 = IntFlatLattice.newSingleton(42);
+        var l4 = IntFlatLattice.newSingleton(42);
+        System.out.println(l1.lub(l2).lub(l3).lub(l4));
+
+    }
+
+    // test the two point Lattice
+    @org.junit.jupiter.api.Test
+    public void testTwoPointLattice() {
         var n1 = NullLattice.newNull();
         System.out.println(n1);
         var n2 = NullLattice.newNull();
@@ -92,6 +115,19 @@ public class LatticeTest {
 
         var n3 = n1.lub(n2);
         System.out.println(n3);
+    }
+
+    // test the power set lattice
+    @org.junit.jupiter.api.Test
+    public void testPowerSetLattice() {
+        var l1 = new IdPowsetLattice(Id.newName("x"));
+        System.out.println(l1.toString());
+        var l2 = new IdPowsetLattice(Id.newName("y"));
+        System.out.println(l2);
+
+        boolean changed = l1.mayLiftTo(l2);
+        System.out.println(changed);
+        System.out.println(l1);
 
     }
 }

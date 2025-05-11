@@ -98,10 +98,11 @@ public class Inline {
     public class UnitTest {
 
         @Test
-        public void test() throws Exception {
+        public void test(){
             Cfg.Program.T cfg = new frontend.Frontend().buildCfg("./test/test-inline.c");
+            Control.loggedMethodNames.add("cfg.Inline");
             Control.tracedMethodNames.add("cfg.Inline");
-            var newCfg = new Inline().doitProgram(cfg);
+            var _ = new Inline().doitProgram(cfg);
 
         }
     }

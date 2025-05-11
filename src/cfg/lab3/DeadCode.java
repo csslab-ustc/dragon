@@ -92,16 +92,5 @@ public class DeadCode {
                 Cfg.Program::pp);
         return trace.doit();
     }
-
-    @Nested
-    class UnitTest{
-
-        @Test
-        public void test() {
-            var cfg = new Frontend().buildCfg("test/test-deadcode.c");
-//            Control.loggedMethodNames.add("cfg.DeadCode");
-            Control.tracedMethodNames.add("cfg.DeadCode");
-            new DeadCode().doitProgram(cfg);
-        }
-    }
+    // end of program
 }

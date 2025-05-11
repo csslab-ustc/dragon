@@ -174,7 +174,7 @@ public class ValueNumber {
         void test() {
             var prog = cfg.SamplePrograms.valueNum;
             Control.tracedMethodNames.add("cfg.ValueNumber");
-            prog = new ValueNumber().doitProgram(prog);
+            var _ = new ValueNumber().doitProgram(prog);
         }
     }
 }

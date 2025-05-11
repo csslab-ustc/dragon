@@ -85,6 +85,11 @@ public class FunSet<X> extends HashSet<X> {
         return newSet;
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
     public Layout.T layout(){
         return Layout.halign(List.of(Layout.str("{"),
                 Layout.halignSepRight(Layout.str(", "),

@@ -66,7 +66,6 @@ public class PowerSetLattice2<X> {
     }
 
     // factory methods
-    @SuppressWarnings("all")
     public static PowerSetLattice2 newEmpty(){
         PowerSetLattice2 lattice = new PowerSetLattice2<>();
         return lookupOrPut(lattice);

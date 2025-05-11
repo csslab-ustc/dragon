@@ -2,15 +2,12 @@ package util.lattice;
 
 /*
              T
-      /   /      \       \
      /   /  ...    \      \
     x1  x2        x_{n-1}  xn
      \   \  ...   /       /
-      \   \      /       /
             _|_
 */
 
-import util.Error;
 import util.Todo;
 
 import java.util.List;
@@ -18,7 +15,7 @@ import java.util.LinkedList;
 import java.util.function.Consumer;
 
 public class FlatLattice2<X> {
-    // datatypes
+    // possible states
     public sealed interface T
         permits Top, Middle, Bot{
     }
@@ -26,12 +23,12 @@ public class FlatLattice2<X> {
     public record Top() implements T{}
     public record Middle<X>(X data) implements T{
     }
-    public record Bot<X>() implements T{
+    public record Bot() implements T{
     }
 
     // current state
     public T state;
-    LinkedList<Consumer<T>> promises;
+    public LinkedList<Consumer<T>> promises;
 
     // constructors
     public FlatLattice2(T t){
@@ -58,10 +55,13 @@ public class FlatLattice2<X> {
     }
 
     // least upper bound:
-    public void lub(FlatLattice2<X> other){
+    public void mayLiftTo(FlatLattice2<X> other){
         switch(this.state){
             case Bot() -> {
-                this.state = other.state;
+                switch (other.state){
+                    case Bot() -> {}
+                    default -> this.state = other.state;
+                }
             }
             case Middle(var data1) -> {
                 switch (other.state){
@@ -76,9 +76,7 @@ public class FlatLattice2<X> {
                             this.state = new Top();
                         }
                     }
-                    case Top()->{
-                        this.state = new Top();
-                    }
+                    case Top()-> this.state = new Top();
                 }
             }
             case Top() -> {
@@ -87,13 +85,13 @@ public class FlatLattice2<X> {
         }
     }
 
-    public void lub(List<FlatLattice2<X>> others){
-        others.forEach(this::lub);
+    public void mayLiftTo(List<FlatLattice2<X>> others){
+        others.forEach(this::mayLiftTo);
     }
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof FlatLattice obj)){
+        if(!(o instanceof FlatLattice2<?> obj)){
             return false;
         }
         return this.state.equals(obj.state);

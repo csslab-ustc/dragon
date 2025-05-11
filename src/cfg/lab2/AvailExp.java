@@ -2,9 +2,6 @@ package cfg.lab2;
 
 import cfg.Cfg;
 import control.Control;
-import frontend.Frontend;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import util.Id;
 import util.Label;
 import util.Layout;
@@ -64,42 +61,5 @@ public class AvailExp {
                 (x) -> Layout.str("<NONE>"));
         return trace.doit();
     }
-    // /////////////////////////////////////////////////////////
-    // unit test
-
-    @Nested
-    class UnitTest {
-        @Test
-        public void test() throws Exception {
-            Cfg.Program.T cfg = new Frontend().buildCfg("test/test-cse.c");
-
-            Control.Printer.shouldPrintStmLabel = true;
-            Cfg.Program.pp(cfg);
-
-            Property<Cfg.Stm.T, Map<Cfg.Exp.T, Set<Label>>> liveInForStms = new AvailExp().doitProgram(cfg);
-
-            ((Cfg.Program.Singleton)cfg).functions().forEach(f -> {
-                Cfg.Function.Singleton fs = (Cfg.Function.Singleton) f;
-                System.out.println("function: " + fs.id());
-                fs.blocks().forEach(b -> {
-                    Cfg.Block.Singleton bs = (Cfg.Block.Singleton) b;
-                    System.out.println("basic block: " + bs.label());
-                    bs.stms().forEach(s -> {
-                        Cfg.Stm.Assign assign = (Cfg.Stm.Assign) s;
-                        System.out.print(assign.label() + ": ");
-                        Cfg.Stm.pp(assign);
-                        System.out.print("\nlive in:\n");
-                        for (var entry : liveInForStms.get(s).entrySet()) {
-                            var layout = Cfg.Exp.layout(entry.getKey());
-                            Layout.printDefault(layout);
-                            System.out.print(" ");
-                            entry.getValue().forEach(v -> System.out.print(v + " "));
-                            System.out.println();
-                        }
-                        System.out.println("---------------------");
-                    });
-                });
-            });
-        }
-    }
+    // end of program
 }

@@ -195,21 +195,20 @@ public class Liveness {
         return trace.doit();
     }
     // end of program
-
-
-    // /////////////////////////////////////////////////////////
-    @Nested
-    class UnitTest{
-
-        @Test
-        public void test() {
-//            Control.loggedMethodNames.add("cfg.Liveness");
-
-            var cfg = new Frontend().buildCfg("test/sum-rec.c");
-            new Liveness().doitProgram(cfg);
-        }
-    }
 }
 // end of liveness
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
